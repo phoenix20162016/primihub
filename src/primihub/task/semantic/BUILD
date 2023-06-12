@@ -4,10 +4,7 @@ config_setting(
     name = "aarch64",
     values = {"define": "cpu_arch=aarch64"},
 )
-config_setting(
-    name = "enable_sgx",
-    values = {"define": "cpu_arch=x86_64"},
-)
+
 config_setting(
     name = "x86_64",
     values = {"define": "cpu_arch=x86_64"},
