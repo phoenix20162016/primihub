@@ -42,7 +42,13 @@ retcode Worker::execute(const PushTaskRequest *pushTaskRequest) {
   auto type = pushTaskRequest->task().type();
   VLOG(2) << "Worker::execute task type: " << type;
   auto dataset_service = nodelet->getDataService();
+#ifdef SGX
+  auto& ra_service = nodelet->get_ra_service();
+  auto& executor = nodelet->get_tee_executor();
+  task_ptr = TaskFactory::Create(this->node_id, *pushTaskRequest, dataset_service, ra_service, executor);
+#else
   task_ptr = TaskFactory::Create(this->node_id, *pushTaskRequest, dataset_service);
+#endif
   if (task_ptr == nullptr) {
     LOG(ERROR) << "Woker create task failed.";
     task_ready_promise_.set_value(false);

@@ -18,6 +18,11 @@ enum WorkerType {
   DRIVER = 1;
 }
 
+enum AlgType {
+  NONE = 0;
+  SHA256 = 1;
+}
+
 enum TaskType {
   ACTOR_TASK = 0;
   NODE_TASK = 1;
@@ -54,6 +59,7 @@ enum PirType {
   ID_PIR = 0;
   KEY_PIR = 1;
 }
+
 
 message int32_array {
   repeated int32 value_int32_array = 1;
@@ -96,6 +102,7 @@ message ParamValue {
     bool value_bool = 13;
     bool_array value_bool_array = 14;
   }
+  AlgType pre_process_type =  30;
 }
 
 message Params {

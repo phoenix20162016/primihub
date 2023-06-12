@@ -28,6 +28,9 @@
 #include "src/primihub/node/server_config.h"
 #include "src/primihub/service/dataset/service.h"
 #include "src/primihub/service/dataset/meta_service/factory.h"
+#ifdef SGX
+#include "sgx/secure_channel/service.h"
+#endif
 
 ABSL_FLAG(std::string, node_id, "node0", "unique node_id");
 ABSL_FLAG(std::string, config, "./config/node.yaml", "config file");
@@ -38,8 +41,15 @@ ABSL_FLAG(int, service_port, 50050, "node service port");
  * @brief
  *  Start Apache arrow flight server with NodeService and DatasetService.
  */
-void RunServer(primihub::VMNodeImpl* node_service,
-        primihub::DataServiceImpl* dataset_service, int service_port) {
+#ifdef SGX
+void RunServer(primihub::VMNodeImpl *node_service,
+        primihub::DataServiceImpl *dataset_service,
+        sgx::RaTlsService *ratls_service,
+        int service_port) {
+#else
+void RunServer(primihub::VMNodeImpl *node_service,
+        primihub::DataServiceImpl *dataset_service, int service_port) {
+#endif
     // Initialize server
     arrow::flight::Location location;
     auto& server_config = primihub::ServerConfig::getInstance();
@@ -64,6 +74,11 @@ void RunServer(primihub::VMNodeImpl* node_service,
         auto *builder = reinterpret_cast<grpc::ServerBuilder *>(raw_builder);
         builder->RegisterService(node_service);
         builder->RegisterService(dataset_service);
+#ifdef SGX
+      if (ratls_service) {
+        builder->RegisterService(ratls_service);
+      }
+#endif
         // set the max message size to 128M
         builder->SetMaxReceiveMessageSize(128 * 1024 * 1024);
     };
@@ -137,6 +152,12 @@ int main(int argc, char **argv) {
         node_id, config_file, dataset_manager);
     // service for dataset register
     auto data_service = std::make_unique<primihub::DataServiceImpl>(dataset_manager.get());
+#ifdef SGX
+    RunServer(node_service.get(), data_service.get(),
+             node_service->getNodelet()->get_ra_service().get(),
+             service_port);
+#else
     RunServer(node_service.get(), data_service.get(), service_port);
+#endif
     return EXIT_SUCCESS;
 }

@@ -35,8 +35,12 @@
 #include "src/primihub/task/semantic/keyword_pir_server_task.h"
 #endif
 
+#ifdef SGX
 #include "src/primihub/task/semantic/tee_task.h"
+#endif
+
 #include "src/primihub/service/dataset/service.h"
+#include <nlohmann/json.hpp>
 
 using primihub::rpc::PushTaskRequest;
 using primihub::rpc::Language;
@@ -49,9 +53,17 @@ namespace primihub::task {
 
 class TaskFactory {
  public:
+#ifdef SGX
   static std::shared_ptr<TaskBase> Create(const std::string& node_id,
-      const PushTaskRequest& request,
-      std::shared_ptr<DatasetService> dataset_service) {
+                                          const PushTaskRequest& request,
+                                          std::shared_ptr<DatasetService> dataset_service,
+                                          std::shared_ptr<sgx::RaTlsService> ra_service = nullptr,
+                                          std::shared_ptr<sgx::TeeEngine> executor = nullptr) {
+#else
+  static std::shared_ptr<TaskBase> Create(const std::string& node_id,
+                                          const PushTaskRequest& request,
+                                          std::shared_ptr<DatasetService> dataset_service) {
+#endif
     auto task_language = request.task().language();
     auto task_type = request.task().type();
     std::shared_ptr<TaskBase> task_ptr{nullptr};
@@ -70,9 +82,15 @@ class TaskFactory {
       case rpc::TaskType::PIR_TASK:
         task_ptr = TaskFactory::CreatePIRTask(node_id, request, dataset_service);
         break;
-      case rpc::TaskType::TEE_DATAPROVIDER_TASK:
-        task_ptr = TaskFactory::CreateTEETask(node_id, request, dataset_service);
+#ifdef SGX
+      case rpc::TaskType::TEE_TASK:
+        task_ptr = TaskFactory::CreateTEETask(node_id,
+                                              request,
+                                              dataset_service,
+                                              ra_service.get(),
+                                              executor.get());
         break;
+#endif
       default:
         LOG(ERROR) << "unsupported task type: " << task_type;
         break;
@@ -166,14 +184,63 @@ class TaskFactory {
 #endif
   }
 
+#ifdef SGX
   static std::shared_ptr<TaskBase> CreateTEETask(const std::string& node_id,
       const PushTaskRequest& request,
-      std::shared_ptr<DatasetService> dataset_service) {
+      std::shared_ptr<DatasetService> dataset_service,
+      sgx::RaTlsService* ra_service,
+      sgx::TeeEngine* tee_executor) {
+    if (ra_service == nullptr || tee_executor == nullptr) {
+      LOG(ERROR) << "ra service or tee executoe is unavailable";
+      return nullptr;
+    }
     const auto& task_config = request.task();
-    return std::make_shared<TEEDataProviderTask>(node_id,
-                                                &task_config,
-                                                dataset_service);
+    auto party_name = task_config.party_name();
+    auto& paramater_map = task_config.params().param_map();
+    auto it = paramater_map.find("component_params");
+    if (it == paramater_map.end()) {
+      LOG(ERROR) << "component_params info is not found in param map";
+      return nullptr;
+    }
+    try {
+      nlohmann::json js_component_info = nlohmann::json::parse(it->second.value_string());
+      auto role_info = js_component_info["roles"];
+      // create data provider Task
+      std::string role_key{"DATA_PROVIDER"};
+      if (role_info.contains(role_key)) {
+        for (const auto& _party_name : role_info[role_key]) {
+          if (_party_name != party_name) {
+            continue;
+          }
+          return std::make_shared<TEEDataProviderTask>(node_id,
+                                                      &task_config,
+                                                      dataset_service,
+                                                      ra_service,
+                                                      tee_executor);
+        }
+      }
+      role_key = "EXECUTOR";
+      if (role_info.contains(role_key)) {
+        for (const auto& _party_name : role_info[role_key]) {
+          if (_party_name != party_name) {
+            continue;
+          }
+          return std::make_shared<TEEComputeTask>(node_id,
+                                                  &task_config,
+                                                  dataset_service,
+                                                  ra_service,
+                                                  tee_executor);
+        }
+      } else {
+        LOG(ERROR) << "no unknow role found";
+        return nullptr;
+      }
+    } catch (std::exception& e) {
+      LOG(ERROR) << "create tee task encountes error: " << e.what();
+      return nullptr;
+    }
   }
+#endif
 
   static std::shared_ptr<ServerTaskBase> Create(const std::string& node_id,
         rpc::TaskType task_type,

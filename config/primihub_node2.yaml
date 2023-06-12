@@ -17,6 +17,12 @@ meta_service:
   port: 9099
   use_tls: false
 
+tee:
+  executor: False
+  sgx_enable: False
+  cert_path: "data/sgx/"
+  ra_server_addr: "127.0.0.1:9898"
+
 datasets:
   # ABY3 LR test case datasets
   - description: "train_party_2"
@@ -85,7 +91,7 @@ datasets:
   - description: "test_hetero_xgb_guest"
     model: "csv"
     source: "/tmp/FL/hetero_xgb/test/test_breast_cancer_guest.csv"
-  
+
   # FL preprocess
   - description: "preprocess_vfl_train_guest"
     model: "csv"

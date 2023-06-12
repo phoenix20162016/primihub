@@ -30,6 +30,7 @@ cc_library(
         ":psi_task",
         ":tee_task",
         ":private_server_base",
+        "@nlohmann_json",
     ],
 )
 cc_library(
@@ -147,13 +148,19 @@ cc_library(
 )
 
 cc_library(
-    name = "tee_task",
-    hdrs = ["tee_task.h"],
-    srcs = ["tee_task.cc"],
-    deps = [
-        ":task_interface",
-        "@pybind11",
-    ],
+  name = "tee_task",
+  hdrs = ["tee_task.h"],
+  srcs = ["tee_task.cc"],
+  deps = [
+    ":task_interface",
+    "@pybind11",
+    ":psi_task",
+    "//src/primihub/util/crypto:hash_lib",
+    "@tee_engine//sgx/engine:engine_enclave",
+    "@tee_engine//sgx/secure_channel:ra_service",
+    "@fmt//:fmt",
+    "@boost//:filesystem",
+  ],
 )
 
 # pir task

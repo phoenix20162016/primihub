@@ -42,14 +42,15 @@ class SchedulerFactory {
       scheduler = SchedulerFactory::CreateMPCScheduler(task_config);
       break;
     case rpc::TaskType::PSI_TASK:
+    case rpc::TaskType::TEE_TASK:
       scheduler = std::make_unique<VMScheduler>();
       break;
     case rpc::TaskType::PIR_TASK:
       scheduler = std::make_unique<PIRScheduler>();
       break;
-    case rpc::TaskType::TEE_TASK:
-      scheduler = std::make_unique<TEEScheduler>();
-      break;
+    // case rpc::TaskType::TEE_TASK:
+    //   scheduler = std::make_unique<TEEScheduler>();
+    //   break;
     default:
       LOG(ERROR) << "unknown task type: " << static_cast<int>(task_type);
       break;

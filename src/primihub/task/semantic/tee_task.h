@@ -17,10 +17,17 @@
 #ifndef SRC_PRIMIHUB_TASK_SEMANTIC_TEE_TASK_H_
 #define SRC_PRIMIHUB_TASK_SEMANTIC_TEE_TASK_H_
 
-#include <pybind11/embed.h>
-#include "src/primihub/task/semantic/task.h"
+#include <vector>
+#include <memory>
+#include <string>
 
-namespace py = pybind11;
+#include "src/primihub/task/semantic/task.h"
+#include "src/primihub/task/semantic/psi_task.h"
+#ifdef SGX
+#include "sgx/secure_channel/service.h"
+#include "sgx/engine/sgx_engine.h"
+#endif
+
 namespace primihub::task {
 // /**
 //  * @brief TEE Executor role task
@@ -42,19 +49,84 @@ namespace primihub::task {
  * @brief TEE DataProvider role task
  *
  */
-class TEEDataProviderTask: public TaskBase {
-    public:
-        TEEDataProviderTask(
-            const std::string& node_id,
-            const TaskParam *task_param,
-            std::shared_ptr<DatasetService> dataset_service);
-        ~TEEDataProviderTask();
-        int execute();
-    private:
-        py::object flight_client_;
-        std::string dataset_, server_addr_;
+// todo add teetask as base of TEEDataProviderTask & TEEComputeTask
+class TEEDataProviderTask: public TaskBase, public PsiCommonOperator {
+ public:
+  TEEDataProviderTask(
+      const std::string &node_id,
+      const TaskParam *task_param,
+      std::shared_ptr <DatasetService> dataset_service,
+      sgx::RaTlsService* ra_service,
+      sgx::TeeEngine* executor);
+  ~TEEDataProviderTask();
+  int execute();
+
+ private:
+  std::string get_role_from_task_param(const TaskParam *task_param, const std::string &nodeid);
+  std::string gen_data_id(const std::string &task_id, const std::string &nodeid) {
+    return task_id + "_" + nodeid;
+  }
+  std::string gen_result_id(const std::string &task_id) {
+    return task_id + "_result";
+  }
+  retcode LoadDataset();
+  retcode LoadParams();
+  retcode GetTeeExecutor(rpc::Node* executor_info, std::string* party_name);
+//  py::object flight_client_;
+  std::string server_addr_;
+  sgx::RaTlsService* ra_service_{nullptr};
+  sgx::TeeEngine* executor_{nullptr};
+  std::string node_id_;
+  std::string dataset_id_;
+  std::vector<std::string> elements_;
+  std::vector<std::string> result_;
+  std::string result_file_path_;
+  std::vector<int> data_index_;
+  std::vector<std::string> extra_info_;
+  nlohmann::json component_params;
 };
 
-} // namespace primihub::task
+class TEEComputeTask: public TaskBase {
+ public:
+  TEEComputeTask(const std::string &node_id, const TaskParam *task_param,
+                 std::shared_ptr<DatasetService> dataset_service,
+                 sgx::RaTlsService* ra_service,
+                 sgx::TeeEngine* executor);
+  ~TEEComputeTask();
+  int execute();
+  sgx::TeeEngine* get_tee_executor() { return executor_; }
+
+ protected:
+  retcode LoadParams();
+  std::string DataIdPrefix() {
+    return request_id();
+  }
+  std::vector<std::string> GetDataProvider();
+
+ private:
+  std::string server_addr_;
+  sgx::RaTlsService* ra_service_{nullptr};
+  sgx::TeeEngine* executor_{nullptr};
+  std::string node_id_;
+  std::vector<std::string> files_;
+  std::vector<std::string> extra_info_;
+  int receive_encrypted_data(const std::string &task_id, const std::string &node_id);
+  int send_enrypted_result(const std::string &task_id, const std::string &node_id,
+                           const primihub::Node &remote_node,
+                           const std::string &result_name, size_t res_size);
+  std::string gen_data_id(const std::string &task_id, const std::string &nodeid) {
+    return task_id + "_" + nodeid;
+  }
+  std::string gen_result_id(const std::string &task_id) {
+    return task_id + "_result";
+  }
+  std::vector<std::string> &get_data_files() { return files_;}
+  void set_data_file(const std::string &file) { files_.push_back(file); }
+  std::vector<std::string>& get_extra_info() {return extra_info_;}
+  nlohmann::json component_params;
+};
+
+
+}  // namespace primihub::task
 
 #endif  // SRC_PRIMIHUB_TASK_SEMANTIC_TEE_TASK_H_

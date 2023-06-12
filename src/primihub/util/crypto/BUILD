@@ -4,6 +4,15 @@ DEFINES = []
 LINK_OPTS = []
 
 cc_library(
+  name = "hash_lib",
+  hdrs = ["hash.h"],
+  srcs = ["hash.cc"],
+  deps = [
+    "@openssl",
+    "@com_github_glog_glog//:glog",
+  ],
+)
+cc_library(
     name = "crypto_lib",
     hdrs = [
         "Blake2.h",

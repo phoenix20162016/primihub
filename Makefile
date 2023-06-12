@@ -6,11 +6,25 @@ TARGET := //:node \
          //src/primihub/pybind_warpper:opt_paillier_c2py \
          //:py_main
 
+JOBS?=
+ifneq ($(jobs), )
+	JOBS = $(jobs)
+	BUILD_FLAG += --jobs=$(JOBS)
+endif
+
+ifeq ($(tee), y)
+	BUILD_FLAG += --cxxopt=-DSGX
+endif
+
+ifeq ($(debug), y)
+	BUILD_FLAG += --config=linux_asan
+endif
+
 release:
-	bazel build --config=PLATFORM_HARDWARE ${TARGET}
+	bazel build --config=PLATFORM_HARDWARE $(BUILD_FLAG) ${TARGET}
 
 #linux_x86_64:
-#	bazel build --config=linux_x86_64 ${TARGET}
+#	bazel build --config=linux_x86_64 $(BUILD_FLAG) ${TARGET}
 #
 #linux_aarch64:
 #	bazel build --config=linux_aarch64 ${TARGET}

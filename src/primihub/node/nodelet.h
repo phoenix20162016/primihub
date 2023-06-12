@@ -24,6 +24,10 @@
 #include "src/primihub/service/dataset/service.h"
 #include "src/primihub/common/common.h"
 #include "src/primihub/node/server_config.h"
+#ifdef SGX
+#include "sgx/secure_channel/service.h"
+#include "sgx/engine/sgx_engine.h"
+#endif
 
 namespace primihub {
 /**
@@ -34,23 +38,28 @@ namespace primihub {
 class Nodelet {
  public:
   explicit Nodelet(const std::string &config_file_path,
-                  std::shared_ptr<service::DatasetService> service) :
-      config_file_path_(config_file_path), dataset_service_(std::move(service)) {
-    auto& server_cfg = ServerConfig::getInstance();
-    auto& service_cfg = server_cfg.getServiceConfig();
-    nodelet_addr_ = service_cfg.to_string();
-    loadConifg(config_file_path, 20);
-  }
+                  std::shared_ptr<service::DatasetService> service);
 
   ~Nodelet() = default;
   std::string getNodeletAddr() const {return nodelet_addr_;}
   std::shared_ptr<service::DatasetService>& getDataService() {return dataset_service_;}
+#ifdef SGX
+  std::shared_ptr<sgx::RaTlsService>& get_ra_service() {return ra_service_;}
+  std::shared_ptr<sgx::TeeEngine>& get_tee_executor() {return tee_executor_;}
+#endif
 
  private:
   void loadConifg(const std::string &config_file_path, unsigned int timeout);
   std::string nodelet_addr_;
   std::string config_file_path_;
   std::shared_ptr<service::DatasetService> dataset_service_{nullptr};
+
+#ifdef SGX
+  std::shared_ptr<sgx::RaTlsService> ra_service_;
+  std::shared_ptr<sgx::TeeEngine> tee_executor_;
+  std::unique_ptr<sgx::Auth_suite> auth_;
+  std::unique_ptr<sgx::RaTlsHandlerImpl> ra_handler_;
+#endif
 };
 
 } // namespace primihub

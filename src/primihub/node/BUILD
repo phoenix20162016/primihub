@@ -54,5 +54,7 @@ cc_library(
   deps = [
     "//src/primihub/common:common_defination",
     "//src/primihub/service:dataset_service",
+    "@tee_engine//sgx/engine:engine_enclave",
+    "@tee_engine//sgx/secure_channel:ra_service"
   ],
 )
