@@ -125,8 +125,7 @@ class TEEComputeTask: public TaskBase {
   std::vector<std::string>& get_extra_info() {return extra_info_;}
   nlohmann::json component_params;
 };
-#endif
 
 }  // namespace primihub::task
-
+#endif  // SGX
 #endif  // SRC_PRIMIHUB_TASK_SEMANTIC_TEE_TASK_H_
