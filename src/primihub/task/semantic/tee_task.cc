@@ -464,5 +464,7 @@ int TEEComputeTask::execute()  {
   }
   return 0;
 }
-#endif  // SGX
+
 }  // namespace primihub::task
+#endif  // SGX
+
