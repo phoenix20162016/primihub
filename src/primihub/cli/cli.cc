@@ -188,18 +188,6 @@ retcode buildRequestWithFlag(PushTaskRequest* request) {
         *code_ptr = task_code;
     }
 
-    // Setup input datasets
-    if (task_lang == "proto" && task_type != TaskType::TEE_TASK) {
-        auto input_datasets = absl::GetFlag(FLAGS_input_datasets);
-        for (int i = 0; i < input_datasets.size(); i++) {
-            task_ptr->add_input_datasets(input_datasets[i]);
-        }
-    }
-
-    // TEE task
-    if (task_type == TaskType::TEE_TASK) {
-        task_ptr->add_input_datasets("datasets");
-    }
     return retcode::SUCCESS;
 }
 
@@ -426,18 +414,6 @@ retcode buildRequestWithTaskConfigFile(const std::string& file_path, PushTaskReq
         party_node.set_port(port);
         party_node.set_use_tls(use_tls);
       }
-    }
-    // dataset
-    if (task_lang == "proto" && task_type != TaskType::TEE_TASK) {
-      auto input_datasets = absl::GetFlag(FLAGS_input_datasets);
-      for (auto& item : js["input_datasets"]) {
-        std::string dataset = item.get<std::string>();
-        task_ptr->add_input_datasets(std::move(dataset));
-      }
-    }
-    // TEE task
-    if (task_type == TaskType::TEE_TASK) {
-      task_ptr->add_input_datasets("datasets");
     }
     BuildFederatedRequest(js, task_ptr);
     // std::string str;
