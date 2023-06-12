@@ -14,6 +14,7 @@ endif
 
 ifeq ($(tee), y)
 	BUILD_FLAG += --cxxopt=-DSGX
+	BUILD_FLAG += --define enable_sgx=true
 endif
 
 ifeq ($(debug), y)

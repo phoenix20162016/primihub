@@ -4,7 +4,10 @@ config_setting(
     name = "aarch64",
     values = {"define": "cpu_arch=aarch64"},
 )
-
+config_setting(
+    name = "enable_sgx",
+    values = {"define": "cpu_arch=x86_64"},
+)
 config_setting(
     name = "x86_64",
     values = {"define": "cpu_arch=x86_64"},
@@ -17,6 +20,11 @@ config_setting(
 config_setting(
    name = "microsoft-apsi",
    values = {"define": "microsoft-apsi=true"},
+)
+
+config_setting(
+  name = "enable_sgx",
+  values = {"define" : "enable_sgx=true"},
 )
 
 #factory for create task
@@ -156,11 +164,15 @@ cc_library(
     "@pybind11",
     ":psi_task",
     "//src/primihub/util/crypto:hash_lib",
-    "@tee_engine//sgx/engine:engine_enclave",
-    "@tee_engine//sgx/secure_channel:ra_service",
     "@fmt//:fmt",
     "@boost//:filesystem",
-  ],
+  ] + select({
+    "enable_sgx": [
+      "@tee_engine//sgx/engine:engine_enclave",
+      "@tee_engine//sgx/secure_channel:ra_service"
+    ],
+	  "//conditions:default": [],
+  }),
 )
 
 # pir task
