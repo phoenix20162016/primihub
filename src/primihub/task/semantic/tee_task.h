@@ -16,17 +16,17 @@
 
 #ifndef SRC_PRIMIHUB_TASK_SEMANTIC_TEE_TASK_H_
 #define SRC_PRIMIHUB_TASK_SEMANTIC_TEE_TASK_H_
-
+#ifdef SGX
 #include <vector>
 #include <memory>
 #include <string>
 
 #include "src/primihub/task/semantic/task.h"
 #include "src/primihub/task/semantic/psi_task.h"
-#ifdef SGX
+
 #include "sgx/secure_channel/service.h"
 #include "sgx/engine/sgx_engine.h"
-#endif
+
 
 namespace primihub::task {
 // /**
@@ -125,7 +125,7 @@ class TEEComputeTask: public TaskBase {
   std::vector<std::string>& get_extra_info() {return extra_info_;}
   nlohmann::json component_params;
 };
-
+#endif
 
 }  // namespace primihub::task
 

@@ -14,6 +14,7 @@
  limitations under the License.
  */
 #include "src/primihub/task/semantic/tee_task.h"
+#ifdef SGX
 #include <glog/logging.h>
 
 #include <set>
@@ -463,5 +464,5 @@ int TEEComputeTask::execute()  {
   }
   return 0;
 }
-
+#endif  // SGX
 }  // namespace primihub::task
