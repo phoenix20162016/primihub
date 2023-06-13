@@ -1,0 +1,54 @@
+{
+  "task_type": "TEE_TASK",
+  "task_name": "tee_psi_task",
+  "task_lang": "proto",
+  "task_code": {
+    "code_file_path": "",
+    "code": "psi"
+  },
+  "component_params": {
+    "roles": {
+      "DATA_PROVIDER": [
+        "CLIENT",
+        "SERVER"
+      ],
+      "EXECUTOR": [
+        "TEE_COMPUTATION_ENGINE"
+      ]
+    },
+    "common_params": {
+      "sync_result_to_server": true,
+      "description": "input data encrypt algorithm, 0: Node, 1: sha256",
+      "data_pre_process_type": 1
+    },
+    "role_params": {
+      "CLIENT": {
+        "description": {
+          "index": "select index for dataset",
+          "output": "datapath for save result"
+        },
+        "index": [0],
+        "output": "data/result/psi_result.csv"
+      },
+      "SERVER": {
+        "index": [0],
+        "output": "data/result/server/psi_result.csv"
+      }
+    }
+  },
+  "party_datasets": {
+    "CLIENT": {
+      "CLIENT": "psi_client_data"
+    },
+    "SERVER": {
+      "SERVER": "psi_server_data"
+    }
+  },
+  "party_access_info": {
+    "TEE_COMPUTATION_ENGINE": {
+      "ip": "127.0.0.1",
+      "port": 50052,
+      "use_tls": false
+    }
+  }
+}
