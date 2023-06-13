@@ -29,22 +29,6 @@
 
 
 namespace primihub::task {
-// /**
-//  * @brief TEE Executor role task
-//  *  1. compile AI server SGX enclave application
-//  *  2. run SGX enclave application
-//  *  3. Notice all DataProvider  start to provide data
-//  */
-// class TEEExecutorTask : public TaskBase {
-//     public:
-//         TEEExecutorTask(const TaskParam *task_param,
-//                         std::shared_ptr<DatasetService> dataset_service);
-//         ~TEEExecutorTask() {}
-
-//         int compile();
-//         int execute();
-// };
-
 /**
  * @brief TEE DataProvider role task
  *
@@ -54,7 +38,7 @@ class TEEDataProviderTask: public TaskBase, public PsiCommonOperator {
  public:
   TEEDataProviderTask(
       const std::string &node_id,
-      const TaskParam *task_param,
+      const TaskParam *task_config,
       std::shared_ptr <DatasetService> dataset_service,
       sgx::RaTlsService* ra_service,
       sgx::TeeEngine* executor);
@@ -62,7 +46,6 @@ class TEEDataProviderTask: public TaskBase, public PsiCommonOperator {
   int execute();
 
  private:
-  std::string get_role_from_task_param(const TaskParam *task_param, const std::string &nodeid);
   std::string gen_data_id(const std::string &task_id, const std::string &nodeid) {
     return task_id + "_" + nodeid;
   }
@@ -72,8 +55,8 @@ class TEEDataProviderTask: public TaskBase, public PsiCommonOperator {
   retcode LoadDataset();
   retcode LoadParams();
   retcode GetTeeExecutor(rpc::Node* executor_info, std::string* party_name);
-//  py::object flight_client_;
-  std::string server_addr_;
+
+ private:
   sgx::RaTlsService* ra_service_{nullptr};
   sgx::TeeEngine* executor_{nullptr};
   std::string node_id_;
@@ -104,7 +87,6 @@ class TEEComputeTask: public TaskBase {
   std::vector<std::string> GetDataProvider();
 
  private:
-  std::string server_addr_;
   sgx::RaTlsService* ra_service_{nullptr};
   sgx::TeeEngine* executor_{nullptr};
   std::string node_id_;

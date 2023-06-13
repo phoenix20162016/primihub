@@ -76,7 +76,8 @@ retcode TEEDataProviderTask::LoadParams() {
   try {
     component_params = nlohmann::json::parse(component_params_str);
     auto& common_params = component_params["common_params"];
-    this->extra_info_ = {common_params["data_pre_process_type"].get<std::string>()};
+    int op_code = common_params["data_pre_process_type"].get<int>();
+    this->extra_info_ = {std::to_string(op_code)};
     auto& party_params = component_params["role_params"][this->party_name()];
 
     for (const auto idx : party_params["index"]) {
@@ -112,17 +113,6 @@ retcode TEEDataProviderTask::GetTeeExecutor(rpc::Node* executor_info, std::strin
   return retcode::SUCCESS;
 }
 
-std::string TEEDataProviderTask::get_role_from_task_param(const TaskParam *task_param,
-                                                          const std::string& nodeid) {
-  auto param_map = task_param->params().param_map();
-  if (param_map["server"].value_string() == nodeid) {
-    return "server";
-  } else if (param_map["client"].value_string() == nodeid) {
-    return "client";
-  }
-  return "";
-}
-
 retcode TEEDataProviderTask::LoadDataset() {
   CHECK_TASK_STOPPED(retcode::FAIL);
   auto driver = this->getDatasetService()->getDriver(this->dataset_id_);
@@ -144,7 +134,7 @@ std::set<std::string> remove_duplicate_data(const std::vector<std::string> &data
 }
 
 std::map<std::string, std::string>
-make_data_map_with_specified_alg(std::set<std::string> &unique_data_buf,
+make_data_map_with_specified_alg(const std::set<std::string> &unique_data_buf,
                                   const std::string &alg) {
   std::map<std::string, std::string> data_hash_map;
   primihub::Hash h_alg;
@@ -153,7 +143,7 @@ make_data_map_with_specified_alg(std::set<std::string> &unique_data_buf,
     return data_hash_map;
   }
 
-  for (auto& it : unique_data_buf) {
+  for (const auto& it : unique_data_buf) {
     data_hash_map.insert(std::pair{h_alg.hash_str(it), it});
   }
 
@@ -196,7 +186,7 @@ int TEEDataProviderTask::execute() {
   }
   LOG(INFO) << "build_ratls_channel success";
 
-  auto key_id = this->executor_->get_key(request_id(), executor_party_name);
+  auto key_id = this->executor_->get_key(request_id(), remote_node.ip());
   // todo data pre process should impelment in data class not here
   auto data_set = remove_duplicate_data(this->elements_);
   auto data_map = make_data_map_with_specified_alg(data_set, this->extra_info_[0]);
@@ -223,7 +213,7 @@ int TEEDataProviderTask::execute() {
   }
   LOG(INFO) << "encrypt data with key:" << key_id << " successed!";
     // send encrypted data to compute node
-  std::string id = this->gen_data_id(request_id(), this->party_name());
+  std::string id = this->gen_data_id(request_id(), this->node_id_);
   LOG(INFO) << "id: " << id << " encrypted_data_size:" << encrypted_data_size;
   primihub::Node _remote_node{remote_node.ip(), remote_node.port(), remote_node.use_tls()};
   std::string_view encrypted_data(encrypted_buf.get(), encrypted_data_size);
@@ -293,7 +283,6 @@ TEEComputeTask::TEEComputeTask(const std::string& node_id, const TaskParam *task
                                : TaskBase(task_param, dataset_service) {
   auto param_map = task_param->params().param_map();
   try {
-    // this->server_addr_ = param_map["executor"].value_string();
     this->ra_service_ = ra_service;
     this->executor_ = executor;
     this->node_id_ = node_id;
@@ -316,7 +305,8 @@ retcode TEEComputeTask::LoadParams() {
   try {
     component_params = nlohmann::json::parse(component_params_str);
     auto& common_params = component_params["common_params"];
-    this->extra_info_ = {common_params["data_pre_process_type"].get<std::string>()};
+    int op_code = common_params["data_pre_process_type"].get<int>();
+    this->extra_info_ = {std::to_string(op_code)};
   } catch (std::exception& e) {
     LOG(ERROR) << "parse paramer failed, " << e.what();
     return retcode::FAIL;
@@ -350,7 +340,8 @@ int TEEComputeTask::receive_encrypted_data(const std::string &task_id, const std
                << "] failed";
     return -1;
   } else {
-    LOG(INFO) << "recv data from peer: [" << node_id << " data len:" << recv_buff.size() << " bytes"
+    LOG(INFO) << "recv data from peer: [" << node_id
+              << " data len:" << recv_buff.size() << " bytes"
               << "] successed";
   }
   std::string key_id = this->get_tee_executor()->get_key(task_id, node_id);
@@ -365,9 +356,11 @@ int TEEComputeTask::receive_encrypted_data(const std::string &task_id, const std
   return 0;
 }
 
-int TEEComputeTask::send_enrypted_result(const std::string &task_id, const std::string &node_id,
-                                         const primihub::Node &remote_node,
-                                         const std::string &result_name, size_t result_size) {
+int TEEComputeTask::send_enrypted_result(const std::string &task_id,
+                                        const std::string &node_id,
+                                        const primihub::Node &remote_node,
+                                        const std::string &result_name,
+                                        size_t result_size) {
   std::string key_id = this->get_tee_executor()->get_key(task_id, node_id);
 
   auto cipher_size = this->get_tee_executor()->get_encrypted_size(result_size);
@@ -410,25 +403,23 @@ int TEEComputeTask::execute()  {
     LOG(ERROR) << "no data provider is configured";
     return -1;
   }
+  auto task_config = this->getTaskParam();
+  const auto& party_access_info = task_config->party_access_info();
   for (const auto& provider_name : data_provider) {
-    if (this->receive_encrypted_data(this->DataIdPrefix(), provider_name) != 0) {
+    auto it = party_access_info.find(provider_name);
+    if (it == party_access_info.end()) {
+      LOG(ERROR) << "no access info configured for data provider: " << provider_name;
+      return -1;
+    }
+    auto& node_info = it->second;
+    if (this->receive_encrypted_data(this->DataIdPrefix(), node_info.node_id()) != 0) {
       LOG(ERROR) << "receive data from " << provider_name << " failed";
       return -1;
     }
   }
-  // for (auto &it:this->task_param_.node_map()) {
-  //   LOG(INFO) << "taskid:"<<task_id << " node_id:"<<it.first;
-  //   if (it.first != "TEE_Executor" && it.first != primihub::SCHEDULER_NODE) {
-  //     if (this->receive_encrypted_data(task_id, it.second.node_id()) != 0) {
-  //       LOG(ERROR) << "receive data from " << it.second.node_id() << " failed";
-  //       return -1;
-  //     }
-  //   }
-  // }
 
   // compute
   auto code = this->task_param_.code();
-  // std::string result_key = this->DataIdPrefix() + "_" + this->task_param_.dest_node();
   std::string result_name = this->DataIdPrefix() + "_result";
   this->set_data_file(result_name);
 
@@ -444,8 +435,6 @@ int TEEComputeTask::execute()  {
   }
 
   // send encrypted result to result node
-  auto task_config = this->getTaskParam();
-  auto& party_access_info = task_config->party_access_info();
   auto it = party_access_info.find(PARTY_CLIENT);
   if (it == party_access_info.end()) {
     LOG(ERROR) << "no party name " << PARTY_CLIENT << " to config to receive data";
@@ -454,10 +443,10 @@ int TEEComputeTask::execute()  {
   Node remote_node;
   pbNode2Node(it->second, &remote_node);
   auto ret_int = this->send_enrypted_result(this->DataIdPrefix(),
-                                        PARTY_CLIENT,
-                                        remote_node,
-                                        result_name,
-                                        result_size);
+                                          remote_node.id(),
+                                          remote_node,
+                                          result_name,
+                                          result_size);
   if (ret_int != 0) {
     LOG(ERROR) << "send result to "<< PARTY_CLIENT << " failed";
     return -1;
