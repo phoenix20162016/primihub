@@ -60,8 +60,8 @@ cc_library(
     "//src/primihub/service:dataset_service",
   ] + select({
     "enable_sgx": [
-      "@tee_engine//sgx/engine:engine_enclave",
-      "@tee_engine//sgx/secure_channel:ra_service"
+      "@tee_engine//sgx/engine:engine_lib",
+      "@tee_engine//sgx/ra:ra_service"
     ],
 	  "//conditions:default": [],
   }),

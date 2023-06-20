@@ -32,15 +32,17 @@ Nodelet::Nodelet(const std::string &config_file_path,
   std::string RA_SERVER = sgx_config.ra_server_addr;
   std::string CN = service_cfg.id();
   std::string cert_path = sgx_config.cert_path;
-  LOG(INFO) << "sgx config enalbe:" << enable << " ra_server:"<< RA_SERVER << " CN: " << CN << " cert_path:" << cert_path;
+  LOG(INFO) << "sgx config enalbe:" << enable
+      << " ra_server:"<< RA_SERVER
+      << " CN: " << CN << " cert_path:" << cert_path;
     // init services
   if (enable) {
     this->ra_service_ = std::make_shared<sgx::RaTlsService>();
-    this->auth_ = std::make_unique<sgx::Auth_suite>();
+    this->auth_ = std::make_unique<sgx::CertAuth>();
     if (tee_executor) {
-      this->tee_executor_ = std::make_shared<sgx::TeeEngine>(sgx::TEE_ES, MAX_ENCLAVE_SLICE_SIZE, CN);
+      this->tee_executor_ = std::make_shared<sgx::TeeEngine>(sgx::TEE_EXECUTOR, sgx::max_enclave_slice_size, CN);
     } else {
-      this->tee_executor_ = std::make_shared<sgx::TeeEngine>(sgx::TEE_DS, MAX_ENCLAVE_SLICE_SIZE, CN);
+      this->tee_executor_ = std::make_shared<sgx::TeeEngine>(sgx::TEE_DATA_SERVER, sgx::max_enclave_slice_size, CN);
     }
     if (!this->tee_executor_->init(this->auth_.get(), cert_path, RA_SERVER)) {
       LOG(ERROR) << "tee engine init error!";

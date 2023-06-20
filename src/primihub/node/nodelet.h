@@ -25,7 +25,7 @@
 #include "src/primihub/common/common.h"
 #include "src/primihub/node/server_config.h"
 #ifdef SGX
-#include "sgx/secure_channel/service.h"
+#include "sgx/ra/service.h"
 #include "sgx/engine/sgx_engine.h"
 #endif
 
@@ -57,7 +57,7 @@ class Nodelet {
 #ifdef SGX
   std::shared_ptr<sgx::RaTlsService> ra_service_;
   std::shared_ptr<sgx::TeeEngine> tee_executor_;
-  std::unique_ptr<sgx::Auth_suite> auth_;
+  std::unique_ptr<sgx::CertAuth> auth_;
   std::unique_ptr<sgx::RaTlsHandlerImpl> ra_handler_;
 #endif
 };

@@ -29,7 +29,7 @@
 #include "src/primihub/service/dataset/service.h"
 #include "src/primihub/service/dataset/meta_service/factory.h"
 #ifdef SGX
-#include "sgx/secure_channel/service.h"
+#include "sgx/ra/service.h"
 #endif
 
 ABSL_FLAG(std::string, node_id, "node0", "unique node_id");

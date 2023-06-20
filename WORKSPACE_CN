@@ -648,6 +648,6 @@ http_archive(
 git_repository(
   name = "tee_engine",
   #commit = "b6a4a395fa67aa4e9323ddf7f9dfa247629912a1",
-  commit = "d7e17c1212c98e174fc8937bb905314605af16b2",
+  commit = "6f967d58ae9686a44524ecfafe6fd6708302b8c3",
   remote = "git@github.com:summerborn12/primihub_tee.git",
 )

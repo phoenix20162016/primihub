@@ -24,7 +24,7 @@
 #include "src/primihub/task/semantic/task.h"
 #include "src/primihub/task/semantic/psi_task.h"
 
-#include "sgx/secure_channel/service.h"
+#include "sgx/ra/service.h"
 #include "sgx/engine/sgx_engine.h"
 
 
