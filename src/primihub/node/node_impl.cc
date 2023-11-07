@@ -188,7 +188,7 @@ retcode VMNodeImpl::DispatchTask(const rpc::PushTaskRequest& task_request,
       kill_request.set_executor(rpc::KillTaskRequest::SCHEDULER);
       for (const auto& patry : recv_cmd_party) {
         rpc::KillTaskResponse reply;
-        auto channel = link_ctx_->getChannel(patry);
+        auto channel = link_ctx_->getChannel(party);
         channel->killTask(kill_request, &reply);
       }
     }
