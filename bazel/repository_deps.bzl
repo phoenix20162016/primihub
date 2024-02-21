@@ -35,15 +35,15 @@ def primihub_deps_cn():
 
   # Abseil C++ libraries
   if "com_google_absl" not in native.existing_rules():
-    _ABSL_COMMIT = "278e0a071885a22dcd2fd1b5576cc44757299343"
+    _ABSL_COMMIT = "abseil-cpp-20230802.2"
     http_archive(
       name = "com_google_absl",
-      sha256 = "1764491a199eb9325b177126547f03d244f86b4ff28f16f206c7b3e7e4f777ec",
-      strip_prefix = "abseil-cpp-%s" % _ABSL_COMMIT,
+      sha256 = "7c11539617af1f332f0854a6fb21e296a1b29c27d03f23c7b49d4adefcd102cc",
+      strip_prefix = "%s" % _ABSL_COMMIT,
       urls = [
-        "https://primihub.oss-cn-beijing.aliyuncs.com/repository_deps/google_absl_%s.tar.gz" % _ABSL_COMMIT,
-        "https://storage.googleapis.com/grpc-bazel-mirror/github.com/abseil/abseil-cpp/archive/%s.tar.gz" % _ABSL_COMMIT,
-        "https://github.com/abseil/abseil-cpp/archive/%s.tar.gz" % _ABSL_COMMIT,
+        "https://primihub.oss-cn-beijing.aliyuncs.com/repository_deps/%s.tar.gz" % _ABSL_COMMIT,
+        #"https://storage.googleapis.com/grpc-bazel-mirror/github.com/abseil/abseil-cpp/archive/%s.tar.gz" % _ABSL_COMMIT,
+        #"https://github.com/abseil/abseil-cpp/archive/%s.tar.gz" % _ABSL_COMMIT,
       ],
     )
 

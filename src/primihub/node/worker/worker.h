@@ -99,12 +99,8 @@ class Worker {
   TaskRunMode ExecuteMode(const PushTaskRequest& request);
 
  private:
-  std::unordered_map<std::string, std::shared_ptr<Worker>> workers_
-      GUARDED_BY(worker_map_mutex_);
-
-  mutable absl::Mutex worker_map_mutex_;
   std::shared_ptr<primihub::task::TaskBase> task_ptr{nullptr};
-  const std::string& node_id;
+  std::string node_id;
   std::shared_ptr<Nodelet> nodelet;
   std::string worker_id_;
   rpc::TaskContext task_info_;
