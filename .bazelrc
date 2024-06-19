@@ -1,7 +1,9 @@
 # Linux
 build:linux_x86_64 --cxxopt=-std=c++17
+build:linux_x86_64 --cxxopt=-O1
 build:linux_x86_64 --host_cxxopt=-std=c++17
 build:linux_x86_64 --copt=-w
+build:linux_x86_64 --copt=-O1
 build:linux_x86_64 --linkopt=-lstdc++fs
 build:linux_x86_64 --copt=-DENABLE_SSE
 build:linux_x86_64 --define cpu=amd64
