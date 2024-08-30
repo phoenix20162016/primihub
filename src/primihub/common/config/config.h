@@ -138,6 +138,7 @@ struct NodeConfig {
   ServerInfo proxy_server_cfg;
   StorageInfo storage_info;
   bool disable_report{false};
+  int task_execute_mode{1};
 };
 
 }  // namespace primihub::common
@@ -307,6 +308,10 @@ template <> struct convert<NodeConfig> {
     if (node["disable_report"]) {
       nc.disable_report = node["disable_report"].as<bool>();
     }
+    if (node["task_execute_mode"]) {
+      nc.task_execute_mode = node["task_execute_mode"].as<int>();
+    }
+
     if (node["storage_path"]) {
       nc.storage_info.path = node["storage_path"].as<std::string>();
     }

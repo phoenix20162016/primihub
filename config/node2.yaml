@@ -23,7 +23,8 @@ location: "127.0.0.1"
 use_tls: false
 
 grpc_port: 50052
-
+# 0 thread, 1 process
+task_execute_mode: 0
 # certificate:
 #   root_ca: "data/cert/ca.crt"
 #   key: "data/cert/test.key"

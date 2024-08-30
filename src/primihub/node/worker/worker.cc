@@ -70,7 +70,10 @@ Worker::TaskRunMode Worker::ExecuteMode(const PushTaskRequest& request) {
       return TaskRunMode::THREAD;
     }
   }
-  return task_run_mode_;
+  auto& svr_cfg = ServerConfig::getInstance();
+  TaskRunMode run_mode{svr_cfg.TaskExecuteMode()};
+  return run_mode;
+  // return task_run_mode_;
 }
 
 retcode Worker::ExecuteTaskByThread(const PushTaskRequest* task_request) {

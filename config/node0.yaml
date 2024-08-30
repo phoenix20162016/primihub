@@ -20,8 +20,9 @@ node: "node0"
 #use_tls: true
 location: "127.0.0.1"
 use_tls: false
-grpc_port: 50050
-
+grpc_port: 60050
+# 0 thread, 1 process
+task_execute_mode: 0
 # certificate:
 #   root_ca: "data/cert/ca.crt"
 #   key: "data/cert/test.key"
@@ -36,7 +37,7 @@ grpc_port: 50050
 proxy_server:
   mode: "grpc"
   ip:  "127.0.0.1"
-  port: 50050
+  port: 60050
   use_tls: false
 
 meta_service:
