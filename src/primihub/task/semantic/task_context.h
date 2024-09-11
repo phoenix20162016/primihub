@@ -36,7 +36,7 @@ namespace primihub::task {
 class TaskContext {
  public:
   TaskContext() {
-    auto link_mode = primihub::network::LinkMode::GRPC;
+    auto link_mode = primihub::network::LinkMode::HTTP;
     link_ctx_ = primihub::network::LinkFactory::createLinkContext(link_mode);
     auto& server_config = primihub::ServerConfig::getInstance();
     if (!server_config.IsInitFlag()) {

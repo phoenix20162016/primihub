@@ -100,7 +100,7 @@ Node& VMScheduler::getLocalNodeCfg() const {
 }
 
 void VMScheduler::InitLinkContext() {
-  auto link_mode = primihub::network::LinkMode::GRPC;
+  auto link_mode = primihub::network::LinkMode::HTTP;
   link_ctx_ = primihub::network::LinkFactory::createLinkContext(link_mode);
   initCertificate();
 }

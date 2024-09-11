@@ -63,7 +63,7 @@ retcode TaskEngine::ParseTaskRequest(const std::string& request_str) {
 
 retcode TaskEngine::InitCommunication() {
   using LinkFactory = primihub::network::LinkFactory;
-  link_mode_ = LinkMode::GRPC;
+  link_mode_ = LinkMode::HTTP;
   link_ctx_ = LinkFactory::createLinkContext(link_mode_);
   auto& server_config = primihub::ServerConfig::getInstance();
   auto& host_cfg = server_config.getServiceConfig();

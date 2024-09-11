@@ -19,11 +19,13 @@
 #include <memory>
 #include "src/primihub/util/network/link_context.h"
 #include "src/primihub/util/network/grpc_link_context.h"
+#include "src/primihub/util/network/http_link_context.h"
 
 namespace primihub::network {
 enum class LinkMode {
     GRPC = 0,
     RAW_SOCKET,
+    HTTP,
 };
 
 class LinkFactory {
@@ -32,6 +34,8 @@ class LinkFactory {
       LinkMode mode = LinkMode::GRPC) {
     if (mode == LinkMode::GRPC) {
       return std::make_unique<GrpcLinkContext>();
+    } else if (mode == LinkMode::HTTP) {
+      return std::make_unique<HttpLinkContext>();
     } else {
       LOG(ERROR) << "Unimplement Mode: " << static_cast<int>(mode);
     }

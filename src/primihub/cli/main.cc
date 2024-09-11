@@ -41,7 +41,7 @@ retcode Run() {
   auto cert_config_path = absl::GetFlag(FLAGS_cert_config);
   auto use_tls = absl::GetFlag(FLAGS_use_tls);
   LOG(INFO) << "use tls: " << use_tls;
-  auto link_mode = primihub::network::LinkMode::GRPC;
+  auto link_mode = primihub::network::LinkMode::HTTP;
   auto link_ctx = primihub::network::LinkFactory::createLinkContext(link_mode);
   if (use_tls) {
     auto& ca_path = cert_config_path[0];

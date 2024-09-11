@@ -59,7 +59,7 @@ retcode VMNodeImpl::Init() {
   this->node_id_ = node_cfg.id();
   task_executor_map_.clear();
   nodelet_ = std::make_shared<Nodelet>(config_file_path_, dataset_service_);
-  auto link_mode{network::LinkMode::GRPC};
+  auto link_mode{network::LinkMode::HTTP};
   link_ctx_ = network::LinkFactory::createLinkContext(link_mode);
   if (node_cfg.use_tls()) {
     link_ctx_->initCertificate(server_config.getCertificateConfig());
@@ -1042,7 +1042,7 @@ retcode VMNodeImpl::ProcessCompleteStatus(const rpc::TaskContext& task_info,
 retcode VMNodeImpl::WaitUntilWorkerReady(const std::string& worker_id,
                                          int timeout_ms) {
   SCopedTimer timer;
-  auto TASK_INFO_STR = pb_util::TaskInfoToString(worker_id);
+  std::string TASK_INFO_STR = pb_util::TaskInfoToString(worker_id);
   do {
     // try to get lock
     if (IsTaskWorkerReady(worker_id)) {
