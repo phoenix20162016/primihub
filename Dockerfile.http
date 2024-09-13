@@ -32,7 +32,7 @@ ADD . /src
 
 # Bazel build primihub-node & primihub-cli & paillier shared library
 RUN bash pre_build.sh \
-  && make disable_py_task=y \
+  && make disable_py_task=y link_mode=http \
   && tar zcfh bazel-bin.tar.gz bazel-bin/cli \
         bazel-bin/node \
         bazel-bin/node_proxy \
