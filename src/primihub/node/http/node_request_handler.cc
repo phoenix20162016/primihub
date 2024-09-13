@@ -1,6 +1,7 @@
 #include "src/primihub/node/http/node_request_handler.h"
 #include <glog/logging.h>
 #include "src/primihub/protos/worker.pb.h"
+#include "src/primihub/protos/service.pb.h"
 #include "src/primihub/util/proto_log_helper.h"
 
 namespace primihub {
@@ -230,5 +231,30 @@ void ForwardRecvRequestHandler::handleRequest(HTTPServerRequest& request,
   std::ostream& ostr = response.send();
   ostr << resp_str;
 }
+// -----------------------------NewDataset-------------------------------
+NewDatasetRequestHandler::NewDatasetRequestHandler(
+    void* service_impl,
+    DataServiceHandler* ds_handler):
+    TaskRequestHandler(service_impl), ref_ds_handler_(ds_handler) {
+
+}
+void NewDatasetRequestHandler::handleRequest(HTTPServerRequest& request,
+                                             HTTPServerResponse& response) {
+//
+  VLOG(5) << "ForwardRecvRequestHandler Request from "
+      << request.clientAddress().toString();
+  std::string data_str;
+  ExtractRequestData(request, &data_str);
+  rpc::NewDatasetRequest rpc_req;
+  rpc_req.ParseFromString(data_str);
+  rpc::NewDatasetResponse rpc_resp;
+  ref_ds_handler_->ProcessNewDataset(rpc_req, &rpc_resp);
+  std::string resp_str;
+  rpc_resp.SerializeToString(&resp_str);
+  response.setChunkedTransferEncoding(true);
+  std::ostream& ostr = response.send();
+  ostr << resp_str;
+}
+
 }  // namespace primihub
 

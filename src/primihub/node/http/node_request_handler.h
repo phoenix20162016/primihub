@@ -8,6 +8,7 @@
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPServerResponse.h"
 #include "src/primihub/node/http/node_http_interface.h"
+#include "src/primihub/node/ds_handler.h"
 namespace primihub {
 using Poco::Timestamp;
 using Poco::DateTimeFormatter;
@@ -165,7 +166,7 @@ class RecvDataRequestHandler: public TaskRequestHandler {
                     HTTPServerResponse& response) override;
 };
 
-// -----------------------------ForwardRecvData------------------------------------
+// -----------------------------ForwardRecvData-------------------------------
 class ForwardRecvRequestHandler: public TaskRequestHandler {
  public:
   ForwardRecvRequestHandler(void* service_impl);
@@ -173,6 +174,15 @@ class ForwardRecvRequestHandler: public TaskRequestHandler {
                     HTTPServerResponse& response) override;
 };
 
+// // -----------------------------NewDataset-------------------------------
+class NewDatasetRequestHandler: public TaskRequestHandler {
+ public:
+  NewDatasetRequestHandler(void* service_impl, DataServiceHandler* ds_handler);
+  void handleRequest(HTTPServerRequest& request,
+                     HTTPServerResponse& response) override;
+ private:
+  DataServiceHandler* ref_ds_handler_;
+};
 } // namespace primihub
 
 

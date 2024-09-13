@@ -117,6 +117,7 @@ class VMNodeHttpInterface final {
   retcode WaitUntilWorkerReady(const std::string& worker_id,
                                int timeout = -1);
 
+  VMNodeImpl* ServerImpl() {return server_impl_.get();}
  protected:
   retcode BuildTaskResponse(const std::string& data,
       rpc::TaskResponse* response);
@@ -125,8 +126,6 @@ class VMNodeHttpInterface final {
       const std::string& key,
       const std::string& data,
       rpc::TaskRequest* requests);
-
-  VMNodeImpl* ServerImpl() {return server_impl_.get();}
 
  private:
   std::unique_ptr<VMNodeImpl> server_impl_{nullptr};

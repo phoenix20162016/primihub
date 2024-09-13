@@ -27,6 +27,7 @@ cc_library(
     "//src/primihub/common/config:server_config",
     "//src/primihub/protos:worker_proto",
     "//src/primihub/node:node_impl_internal",
+    "//src/primihub/node:data_register_service_handler",
     "@com_github_glog_glog//:glog",
     "@com_google_absl//absl/flags:flag",
     "@com_google_absl//absl/flags:parse",

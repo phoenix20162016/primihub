@@ -450,6 +450,12 @@ retcode HttpChannel::CheckSendCompleteStatus(
 
 retcode HttpChannel::NewDataset(const rpc::NewDatasetRequest& request,
                                 rpc::NewDatasetResponse* reply) {
+  std::string req_data;
+  request.SerializeToString(&req_data);
+  std::string result_buf;
+  ExecuteHttpRequest(dest_node_, HttpMethod::NewDataset, req_data, &result_buf);
+  reply->ParseFromString(result_buf);
+  return retcode::SUCCESS;
   // int retry_time{0};
   // // const auto& task_info = request.task().task_info();
   // std::string TASK_INFO_STR = "";

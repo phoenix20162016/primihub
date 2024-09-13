@@ -89,6 +89,21 @@ cc_library(
   hdrs = ["ds.h"],
   srcs = ["ds.cc"],
   deps = [
+    ":data_register_service_handler",
+    "//src/primihub/protos:service_proto",
+    "//src/primihub/util:threadsafe_queue",
+    "//src/primihub/util:pb_log_helper",
+  ],
+)
+cc_library(
+  name = "data_register_service_handler",
+  hdrs = [
+    "ds_handler.h",
+  ],
+  srcs = [
+    "ds_handler.cc"
+  ],
+  deps = [
     "//src/primihub/protos:service_proto",
     "//src/primihub/data_store:data_store_lib",
     "//src/primihub/service:dataset_service",
