@@ -64,8 +64,6 @@ class HttpChannel : public IChannel {
   retcode buildTaskRequest(const std::string& role,
                            std::string_view sv_data,
                            rpc::TaskRequest* send_pb_data);
-  // std::shared_ptr<grpc::Channel> buildChannel(std::string& server_addr,
-  //                                             bool use_tls);
   // data set related operation
   retcode DownloadData(const rpc::DownloadRequest& request,
                        std::vector<std::string>* data) override;
@@ -86,9 +84,6 @@ class HttpChannel : public IChannel {
                             std::string* result);
 
  private:
-  // std::unique_ptr<rpc::VMNode::Stub> stub_{nullptr};
-  // std::unique_ptr<rpc::DataSetService::Stub> dataset_stub_{nullptr};
-  // std::shared_ptr<grpc::Channel> grpc_channel_{nullptr};
   CURL* curl_{nullptr};
   primihub::Node dest_node_;
   int retry_max_times_{3};

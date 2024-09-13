@@ -17,7 +17,7 @@ public:
 
 	HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request) {
 		if (request.getURI() == "/") {
-      return new TimeRequestHandler(format_);
+      return new TimeRequestHandler();
     } else if (request.getURI() == "/primihub/SubmitTask") {
       LOG(INFO) << "/primihub/SubmitTask";
       return new SubmitTaskRequestHandler(service_impl_);

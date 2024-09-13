@@ -16,60 +16,32 @@ using Poco::DateTimeFormat;
 using Poco::Net::HTTPRequestHandler;
 using Poco::Net::HTTPServerRequest;
 using Poco::Net::HTTPServerResponse;
-
 class TimeRequestHandler: public HTTPRequestHandler {
-	/// Return a HTML document with the current date and time.
-public:
-	TimeRequestHandler(const std::string& format):
-		_format(format) {}
+/// Return a HTML document with the current date and time.
+ public:
+  TimeRequestHandler() = default;
 
-	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) {
-		LOG(INFO) << "Request from " + request.clientAddress().toString();
+  void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) {
+    LOG(INFO) << "Request from " + request.clientAddress().toString();
 
-		Timestamp now;
-		std::string dt(DateTimeFormatter::format(now, _format));
+    Timestamp now;
+    std::string dt(DateTimeFormatter::format(now, _format));
 
-		response.setChunkedTransferEncoding(true);
-		response.setContentType("text/html");
+    response.setChunkedTransferEncoding(true);
+    response.setContentType("text/html");
 
-		std::ostream& ostr = response.send();
-		ostr << "<html><head><title>"
-            "HTTPTimeServer powered by POCO C++ Libraries</title>";
-		ostr << "<meta http-equiv=\"refresh\" content=\"1\"></head>";
-		ostr << "<body><p style=\"text-align: center; font-size: 48px;\">";
-		ostr << dt;
-    ostr << "testesttest";
-		ostr << "</p></body></html>";
-	}
+    std::ostream& ostr = response.send();
+    ostr << "<html><head><title>"
+    "HTTPTimeServer powered by POCO C++ Libraries</title>";
+    ostr << "<meta http-equiv=\"refresh\" content=\"5\"></head>";
+    ostr << "<body><p style=\"text-align: center; font-size: 48px;\">";
+    ostr << dt;
+    ostr << "</p></body></html>";
+  }
 
 private:
-	std::string _format;
+  std::string _format{DateTimeFormat::SORTABLE_FORMAT};
 };
-
-// class SendDataRequestHandler: public HTTPRequestHandler {
-// 	/// Return a HTML document with the current date and time.
-// public:
-// 	SendDataRequestHandler() = default;
-
-// 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) {
-// 		LOG(INFO) << "Request from " + request.clientAddress().toString();
-//     std::istream &istr = request.stream();
-//     auto len = request.getContentLength();
-//     if (len > 0) {
-//       LOG(INFO) << "XXXXXXXXX content len: " << len;
-//       std::string buf;
-//       buf.resize(len);
-//       istr.read(&buf[0], len);
-//       LOG(INFO) << "received data: " << buf;
-//     } else {
-//       LOG(INFO) << "content length is: " << len;
-//     }
-// 		response.setChunkedTransferEncoding(true);
-//     std::string msg_info{"kdsjfaskfjalskdfjlsakdfjslakdfjslkdfjaslkdfjslkfjsalkfdjasklfj"};
-// 		std::ostream& ostr = response.send();
-//     ostr << msg_info;
-// 	}
-// };
 
 class TaskRequestHandler: public HTTPRequestHandler {
  public:
@@ -77,23 +49,6 @@ class TaskRequestHandler: public HTTPRequestHandler {
   virtual ~TaskRequestHandler() = default;
 
  protected:
-  // template <typename Func, typename REQ, typename RES>
-  // retcode TaskProcessHandler(HTTPServerRequest& req,
-  //                            HTTPServerResponse& resp, Func func) {
-  //   std::string data_str;
-  //   ExtractRequestData(request, &data_str);
-  //   REQ rpc_req;
-  //   rpc_req.ParseFromString(data_str);
-  //   RES rpc_resp;
-  //   func(rpc_req, &rpc_resp);
-  //   std::string resp_str;
-  //   rpc_resp.SerializeToString(&resp_str);
-  //   response.setChunkedTransferEncoding(true);
-  //   std::ostream& ostr = response.send();
-  //   ostr << resp_str;
-  //   return retcode::SUCCESS;
-  // }
-
   VMNodeHttpInterface* Interface() {return interface_;}
   retcode ExtractRequestData(HTTPServerRequest& request,
                              std::string* payload);
